@@ -1,0 +1,237 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- The browser can use non-English-language characters (...kind of) -->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+       <link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+      <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+      <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+      
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <script type="text/javascript" src="jquery.sparkline.js"></script>
+      <script src="jquery-circle-progress/dist/circle-progress.js"></script>
+	   <script src="http://d3js.org/d3.v3.min.js"></script>
+	   
+
+      <style>
+      * {
+        font-family: "Helvetica Neue";
+      }
+      #wrapper{
+        position:absolute;
+    	  /*top: 150px;*/
+    	  left: 100px;
+      }
+	 
+      .left{
+        float: left; 
+        margin-left: 100px;
+        width: 300px;
+      }
+      .columnLabels{
+        float: right; 
+        margin-left: 10px;
+        width: 100px;
+        white-space: pre;
+      }
+    .dynamicsparkline{
+      position:relative;
+        left: 20px;
+        width: 200px;
+    }
+    #userColumn{
+    position:absolute;
+        top: 10px;
+        left: 60px;
+    }
+	  #user1Text{
+	  position:absolute;
+    	  top: 10px;
+    	  left: 80px;
+	  }
+	  #user2Text{
+	  position:absolute;
+    	  top: 10px;
+    	  left: 170px;
+	  }
+	  #svgUser1{
+	  position:absolute;
+    	  left: 10px;
+	  }
+	  #svgUser2{
+	  position:absolute;
+    	  left: 300px;
+	  }
+	  
+      #compareText{
+	   position:absolute;
+	   top:200 px;
+	   left:100 px;
+        float: left; 
+        white-space: pre;
+        height: 500px;
+        width: 1200px;
+      }
+      .right{ 
+        display: inline-block; 
+        margin-left: 300px;
+        width: 100px;  
+      }
+      .leftButton{
+        float: left; 
+        width: 100px;
+      }
+
+      .rightButton{ 
+        display: inline-block; 
+        margin-left: 40px;  
+      }
+      textarea,button { 
+        max-width: 400px;
+      }
+      p, text {
+        font-size: 0.85em;
+      }
+      
+      .container{
+		
+         display: flex;
+         width :1500px;
+      }
+  	  #slide{
+	  
+  	    width: 700px;
+  	  }
+  	  #chart{
+    	  width:400 px;
+    	  top:0 px;
+  	  }
+  	  #abs{
+    	  position:absolute;
+    	  top: 10px;
+    	  left: 600px;
+		  border: 3px solid black;
+		  border-radius: 12px;
+  	  }
+  	  #h{
+    	  position:absolute;
+    	  left: 200px;
+    	  top : 100 px;
+  	  }
+      #labelDivide{
+        position:absolute;
+        top: 60px;
+        left: 30px; 
+      }
+	   .legend {
+    font-size: 12px;
+    font-family: sans-serif;
+  }
+
+  .legend path,
+  .legend line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+    opacity: 1;
+  }
+
+  .circle-legend line {
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+
+  .circle-legend circle {
+    stroke: #ccc;
+    stroke-dasharray: 4, 2;
+    fill: none;
+  }
+  .compareButton{
+	  position:absolute;
+	  margin-left: 10px;
+        top: 10px;
+        left: 100px; 
+  }
+      </style>
+  </head>
+  <body id="bodyContainer">  
+
+   <button id="compareButton" class="" style ="width:200px; margin-left:20px;" onclick="compareTwoUsers()">Compare</button>
+ 
+    <form>
+      <input id="cbDivide" type="checkbox"><label id="labelDivide" style="font-size:130%;font-weight:bold;">Divide the users based on total # of answers accepted</label>
+    </form>
+	
+	  
+      <!-- <button id="divide" class="leftButton">Divide</button>
+      <button id="combine" class="rightButton">Combine</button>
+  	  -->
+    <div id="chart" class="container"></div>
+  	<div id="slide" style="margin-left:10px;">
+  		
+      <p style="font-size:130%;"><b># of Users:</b><span class="dynamicsparkline" style="margin-left:70px; width:500px">Loading..</span></p>
+	  <table style="width:600px;"><tr style="width:600px;">
+     <td style="width:100px;"><p style="font-size:130%;"><b># of Posts:</b></td><td style="width:500px;"><input type="range" name="range" class="slider" id="post_slider" value="6" min="1" max="50" step="1" onchange="updateSlider(this.value)"></td></tr></table>
+    </div>
+    <div id="abs">
+        <svg width="600" height="100">
+      
+            <circle cx="20" cy="20" r="6" fill="PaleGreen" />
+            <circle cx="20" cy="40" r="6" fill="LimeGreen" />
+            <circle cx="20" cy="60" r="6" fill="darkgreen" />
+          
+            <text x="30" y="25" font-family="sans-serif" style="font-size:100%" fill="blue">Answers accepted less than  5</text>
+            <text x="30" y="45" font-family="sans-serif" style="font-size:100%" fill="blue">Answers accepted greater than 5 and less than 10</text>
+            <text x="30" y="65" font-family="sans-serif" style="font-size:100%" fill="blue">Answers accepted greater than 10</text>
+           <circle cx="380" cy="65" r="10" stroke="black" stroke-width="1" fill="none" />
+           <circle cx="410" cy="65" r="20" stroke="black" stroke-width="1" fill="none" />
+           <circle cx="460" cy="65" r="30" stroke="black" stroke-width="1" fill="none" />
+         <text x="376" y="69" font-family="sans-serif" style="font-size:90%" fill="green">1</text>
+         <text x="395" y="69" font-family="sans-serif" style="font-size:120%" fill="green">100</text>
+         <text x="446" y="69" font-family="sans-serif" style="font-size:140%" fill="green">500</text>
+        <text x="350" y="25" font-family="sans-serif" style="font-size:100%" fill="blue">Circle size according to score of User</text>        
+        </svg> 
+                
+        
+        <div id="wrapper" >
+          <div cols="5" id="userColumn" class="columnLabels" name="myText" style="display:none;font-weight: bold;"></div>
+          <div cols="20" id="user1Text" class="left" name="myText" style="display:none;font-weight: bold;"></div>
+          <div cols="20" id="user2Text" class="right" name="myText" style="display:none;font-weight: bold;"></div>
+          <div id="compareText">
+            <svg  id="svgUserData"></svg>
+			<svg id="bubbleCloudLabel">
+				<!-- <circle cx="50" cy="50" r="6" fill="Salmon" /> -->
+				<!-- <circle cx="50" cy="70" r="6" fill="lightBlue" /> -->
+          
+				<!-- <text x="70" y="55" font-family="sans-serif" style="font-size:90%" fill="blue">Tag Words</text> -->
+				<!-- <text x="70" y="75" font-family="sans-serif" style="font-size:90%" fill="blue">Non-Tag Words</text> -->
+            </svg>
+            <svg  id="svgUser1"></svg>
+            <svg  id="svgUser2"></svg>
+          </div>
+        </div>
+    
+    
+          
+         
+       
+      </div>
+      <!-- This is D3, our graphing library -->
+	 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+
+    <!-- Now we include our actual visualization -->
+   
+    <script src="bubbles.js"></script>
+    <script src="textbubble.js"></script>
+    <script src="compareUsers.js"></script>
+    
+    
+        
+    
+   
+  </body>
+</html>
